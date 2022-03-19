@@ -5,15 +5,21 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import ctypes
 import math
+import json
 
 root = tk.Tk()
 
 global Data_View
 
 def Window_installation():
-    User32 = ctypes.windll.user32
-    USMW = math.trunc((User32.GetSystemMetrics(0) / 2))
-    USMH = math.trunc((User32.GetSystemMetrics(1) / 2))
+    try:
+        User32 = ctypes.windll.user32
+        USMW = math.trunc((User32.GetSystemMetrics(0) / 2))
+        USMH = math.trunc((User32.GetSystemMetrics(1) / 2))
+    except:
+        pass
+        USMW = 500
+        USMH = 500
     PSSW = 890
     PSSH = 420
     MPSW = math.trunc(PSSW / 2)
@@ -39,10 +45,15 @@ def Window_design():
     Data_View_AREA = tk.LabelFrame(root)
     Data_View_AREA.place(x=10, y=60, height=234, width=709)
     Data_View_AREA.configure(text='''데이터 뷰어''')
+    
+    scrollbar = tk.Scrollbar(Data_View)
+    scrollbar.pack(side="right", fill="y")
 
     Data_View = tk.ttk.Treeview(root, 
         column=["a", "age", "grade"], 
-        displaycolumns=["a", "age", "grade"])
+        displaycolumns=["a", "age", "grade"],
+        yscrollcommand = scrollbar.set
+        )
     Data_View.pack()
 
     Data_View.column("a", width=60, anchor="center")
@@ -112,16 +123,25 @@ def Window_design():
     Save_button.place(x=740, y=160, height=35, width=127)
     Save_button.configure(text='''저장''')
 
+def Select_button():
+    data_list = []
+    with open('son-recognition-All.json', "r") as myfile:
+        json_data = json.load(myfile)
+        for e, v in json_data.items():
+            data_list.append((e[-12:][0:3],e[-12:][4:8],'a'))
+        for i in range(len(data_list)):
+            Data_View.insert("", "end", text="", values=data_list[i], iid=i)
+
 def main():
     treeValueList = [("1", '0000', "A"),
                  ("1", '0245', "B"),
                  ("2", '21', "C")]
 
-    for i in range(len(treeValueList)):
-        Data_View.insert("", "end", text="", values=treeValueList[i], iid=i)
+    
     root.mainloop()
 
 if __name__ == "__main__":
     Window_installation()
     Window_design()
+    Select_button()
     main()
